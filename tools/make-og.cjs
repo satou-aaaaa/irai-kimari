@@ -15,8 +15,8 @@ const K = require(path.join(__dirname, "..", "data.js"));
       <div style="font-size:36px;margin-top:14px">報酬は？<br>やめられる？</div>
     </div>
     <div style="flex:1;background:#fffdf7;border:4px solid #1d2a3f;border-radius:8px;overflow:hidden">
-      <div style="font-size:30px;font-weight:700;padding:22px 20px 6px">🏪 「帰ります」と言っても帰らせてくれず、契約した。</div>
-      <div style="display:flex;flex-direction:column;gap:10px;padding:16px">${line("頼んだ日に全部")}${line("できた物を渡す時", 1)}${line("作る前に全部")}</div>
+      <div style="font-size:30px;font-weight:700;padding:22px 20px 6px">🔨 職人に本だなを作ってもらう約束。報酬はいつ払う？</div>
+      <div style="display:flex;flex-direction:column;gap:10px;padding:16px">${line("頼んだその日に全部")}${line("できた物を渡してもらう時", 1)}${line("作り始める前に全部")}</div>
     </div>
   </div></body>`);
   await p.screenshot({ path: path.join(__dirname, "..", "og.png") });

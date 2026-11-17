@@ -111,7 +111,7 @@ function resolve(P) {
 }
 
 // ---- 2. ファイルの中身 ----
-const html = readFileSync(path.join(root, "index.html"), "utf8"), gen = readFileSync(path.join(root, "data.js"), "utf8"), readme = readFileSync(path.join(root, "README.md"), "utf8");
+const html = readFileSync(path.join(root, "index.html"), "utf8"), gen = readFileSync(path.join(root, "data.js"), "utf8"), readme = readFileSync(path.join(root, "README.md"), "utf8"), og0 = readFileSync(path.join(root, "tools", "make-og.cjs"), "utf8");
 const ext = [...html.matchAll(/(?:src|href)="(https?:[^"]+)"/g)].map((m) => m[1]).filter((u) => !/^https:\/\/fonts\.googleapis\.com(\/|$)|^https:\/\/ko-fi\.com\/satouaaaaa$/.test(u));
 check("外から読むのは文字（Google Fonts）だけ。スクリプト・広告・解析を入れない（出典のリンクは押したときに開くだけ）", ext.length === 0 && ![...html.matchAll(/<script[^>]+src="([^"]+)"/g)].some((m) => /^https?:/.test(m[1])), ext.join(","));
 check("CSP で通信先を自分だけにしている（connect-src は 'self' だけ。* や https: を足さない。CodeRabbit shitsugyo-teate#1）", (() => { const m = html.match(/connect-src([^;"]*)/); return !!m && m[1].trim().split(/\s+/).join(" ") === "'self'"; })());
@@ -122,7 +122,9 @@ check("乱数は sort の比較の中で引かない（ブラウザで引く回�
 check("言い方：「必ずもらえる」「絶対に違法」などと言い切らない", !/必ずもらえ|絶対に違法|必ず取れ|絶対に取れ/.test(html + gen + readme));
 { const howto = (html.match(/<dialog id="howto"[\s\S]*?<\/dialog>/) || [""])[0], ab = (html.match(/function about\(\)[\s\S]*?\n}/) || [""])[0], dis = (t) => /法律の助言ではありません/.test(t) && /公式の情報の代わりではありません/.test(t) && /消費者ホットライン/.test(t) && /188/.test(t);
   check("言い方：遊び方・「このゲームについて」・README のどれにも、法律の助言・公式の情報の代わりではないこと・確かめる所（消費者ホットライン188）・判例・クーリング・オフ・金額のこまかい計算は答えにしないことがある", dis(howto) && dis(ab) && dis(readme) && [howto, ab, readme].every((t) => /判例/.test(t) && /クーリング・オフ/.test(t)), `遊び方 ${dis(howto)}・について ${dis(ab)}・README ${dis(readme)}`); }
-check("写し元（売買のきまり）の言葉が残っていない（game-dev.md A 手順5）", !/手付|買戻し|bbk-|BBK/.test(html + gen + readme));
+check("写し元（売買のきまり）の言葉が残っていない（game-dev.md A 手順5）", !/手付|買戻し|bbk-|BBK/.test(html + gen + readme + og0));
+{ const okAns = (og0.match(/line\("([^"]+)", 1\)/) || [])[1], all = new Set(); for (const k of G.KINDS) for (let s = 0; s < 300; s++) all.add(G.make(`${k.id}|og${s}`).ans);
+  check("共有画像（tools/make-og.cjs）の正解は、このゲームの答えのどれか（写し元の場面が残らない）", !!okAns && all.has(okAns), okAns); }
 check("画面にお笑いの言葉を入れない（本物っぽく）", !/お笑い|ギャグ|ツッコミ|なんでやねん|（うそ）/.test(html + gen));
 check("引き継ぎ：transfer.js をゲームの script より前に、このゲームの記録のキー（記録・文字・復習）だけで読む・depth.js も前に読む", /<script src="transfer\.js" data-game="irai-kimari" data-keys="irk-v1,irk-fs,irk-depth"><\/script>\s*<script src="depth\.js" data-game="irai-kimari" data-key="irk-depth"><\/script>\s*<\/head>/.test(html) && html.indexOf('src="transfer.js"') < html.indexOf('src="data.js"') && /data-hk/.test(html) && existsSync(path.join(root, "transfer.js")));
 check("好きなだけ遊べる：チケット・回数の上限・🔒で開くモードを入れない（game-dev.md F1・F2）", !/🎫|チケット|すると開く|🔒/.test(html) && !/\blife\b|ELIFE/.test(html));
